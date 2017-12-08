@@ -1,0 +1,77 @@
+﻿@{
+    Layout = "~/_SiteLayout.cshtml";
+    Page.Title = "Desafio 2 - Leandro Bruscato";
+
+    // Inicializar variáveis gerais de página
+    var UrlToScraping = "";
+    var returnUrl = Request.QueryString["ReturnUrl"];
+    if (returnUrl.IsEmpty())
+    {
+        // Alguns provedores de logon externos requerem sempre um valor URL de retorno
+        returnUrl = Href("~/");
+    }
+    // Get Scraping de qualquer url
+    HtmlString GetWebScraping(string url)
+    {
+        try
+        {
+
+            WebRequest request = WebRequest.Create(url);
+            WebResponse response = request.GetResponse();
+            Stream stream = response.GetResponseStream();
+            StreamReader reader = new StreamReader(stream);
+            string result = reader.ReadToEnd();
+            stream.Dispose();
+            reader.Dispose();
+            return new HtmlString(result);
+        }
+        catch
+        {
+            string result = "<font color=\"red\">URL NÃO COMPATIVEL!</font>";
+            return new HtmlString(result);
+        }
+    }
+
+    // Caso esta seja uma solicitação POST, valide e processe os dados
+    if (IsPost)
+    {
+        UrlToScraping = Request.Form["UrlToScraping"];
+    }
+
+}
+
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title"></hgroup>
+
+        </div>
+    </section>
+}
+
+<h3></h3>
+<section id="ScrapingTest">
+    <h2>Teste simplificado de Scraping </h2>
+    <form method="post">
+        @AntiForgery.GetHtml()
+        @* Se existir um ou mais erros de validação, mostre um erro *@
+        
+
+        <fieldset>
+
+            <ol class="round">
+                <li class="email">
+                    <label for="lblUrlToScraping" @if (!ModelState.IsValidField("UrlToScraping")) { <text> class="error-label" </text> }>url para o Get do Scraping</label>
+                    <input type="text" id="UrlToScraping" name="UrlToScraping" value="@UrlToScraping" @Validation.For("UrlToScraping") />
+                    @* Escreva quaisquer erros de validação de nome de usuário nesta página *@
+                    @Html.ValidationMessage("UrlToScraping")
+                </li>
+                <li>
+                    <label for="lblScrapingTitle">Resultado do Scraping da Url: </label>
+                    @GetWebScraping(@UrlToScraping)
+                </li>
+            </ol>
+            <input type="submit" value="Get Scraping da Url" />
+        </fieldset>
+    </form>
+</section>
